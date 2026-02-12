@@ -7,19 +7,18 @@ import (
 	"path/filepath"
 )
 
-const configFileName = ".gatorconfig.json"
-
 type Config struct {
-	DBURL string `json:"db_url"`
+	DBURL             string `json:"db_url"`
+	Current_user_name string `json:"current_user_name"`
 }
 
 func Read() (*Config, error) {
 	var config Config
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return nil, fmt.Errorf("erro ao obter o caminho da home: %w", err)
+	gatorConfigJSON, erro := getConfigFilePath()
+	if erro != nil {
+		return nil, fmt.Errorf("erro ao obter o caminho do arquivo config %w", erro)
 	}
-	gatorConfigJSON := filepath.Join(home, configFileName)
+
 	data, err := os.ReadFile(gatorConfigJSON)
 	if err != nil {
 		return nil, fmt.Errorf("erro a tentar abrir o arquivo gatorconfig: %w", err)
@@ -30,4 +29,40 @@ func Read() (*Config, error) {
 	}
 
 	return &config, nil
+}
+
+func SetUser(user string) error {
+	config, err := Read()
+	if err != nil {
+		return err
+	}
+	config.Current_user_name = user
+
+	err = write(config)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func getConfigFilePath() (string, error) {
+	const configFileName = ".gatorconfig.json"
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", fmt.Errorf("erro ao obter o caminho da home: %w", err)
+	}
+
+	return filepath.Join(home, configFileName), nil
+}
+
+func write(config *Config) error {
+	configFilePath, err := getConfigFilePath()
+	if err != nil {
+		return err
+	}
+	dadosByte, err := json.MarshalIndent(config, "", " ")
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(configFilePath, dadosByte, 0o664)
 }
