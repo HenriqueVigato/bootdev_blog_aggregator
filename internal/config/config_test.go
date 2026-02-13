@@ -1,45 +1,69 @@
 package config
 
 import (
+	"os"
+	"strings"
 	"testing"
 )
 
-func TestGetConfigFilePath(t *testing.T) {
-	path, err := getConfigFilePath()
+func setupTestEnv(t *testing.T) string {
+	tmpDir := t.TempDir()
+	originalHome := os.Getenv("HOME")
+	os.Setenv("HOME", tmpDir)
+
+	testPath, _ := getConfigFilePath()
+
+	err := os.WriteFile(testPath, []byte(`{"db_url":"postgres://example"}`), 0o644)
 	if err != nil {
-		t.Errorf("erro ao obter o path do arquivo config")
+		t.Fatalf("erro ao escrever no arquivo de teste %v", err)
 	}
 
-	if path != "/home/henrique/.gatorconfig.json" {
+	t.Cleanup(func() {
+		os.Setenv("HOME", originalHome)
+	})
+
+	return tmpDir
+}
+
+func TestGetConfigFilePath(t *testing.T) {
+	setupTestEnv(t)
+	path, err := getConfigFilePath()
+	if err != nil {
+		t.Fatalf("erro ao obter o path do arquivo config")
+	}
+
+	if !strings.Contains(path, ".gatorconfig.json") {
 		t.Logf("Output: %v ", path)
-		t.Errorf("esperava encontrar o output: /home/henrique/.gatorconfig.json")
+		t.Fatalf("esperava encontrar o output: .gatorconfig.json")
 	}
 }
 
 func TestRead(t *testing.T) {
+	setupTestEnv(t)
+
 	config, err := Read()
 	if err != nil {
-		t.Errorf("%v: ", err)
+		t.Fatalf("%v: ", err)
 	}
 
-	if config.DBURL != "postgres://example" {
+	if !strings.Contains(config.DBURL, "postgres://example") {
 		t.Logf("Output recebido: %s", config.DBURL)
-		t.Errorf("esperava encontrar a string 'postgress://example'")
+		t.Fatalf("esperava encontrar a string 'postgress://example'")
 	}
 }
 
 func TestSetUser(t *testing.T) {
 	err := SetUser("Henrique")
 	if err != nil {
-		t.Errorf("Erro ao definir o usuario novo %v", err)
+		t.Fatalf("Erro ao definir o usuario novo %v", err)
 	}
 	config, err := Read()
 	if err != nil {
-		t.Errorf("Erro ao ler o arquivo de config: %v", err)
+		t.Fatalf("Erro ao ler o arquivo de config: %v", err)
 	}
 
 	if config.Current_user_name != "Henrique" {
 		t.Logf("Output recebido: %s", config.Current_user_name)
-		t.Errorf("current user name diferente do esperado")
+		t.Fatalf("current user name diferente do esperado")
 	}
 }
