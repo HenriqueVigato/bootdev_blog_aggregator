@@ -62,8 +62,8 @@ func TestSetUser(t *testing.T) {
 		t.Fatalf("Erro ao ler o arquivo de config: %v", err)
 	}
 
-	if config.Current_user_name != "Henrique" {
-		t.Logf("Output recebido: %s", config.Current_user_name)
+	if config.CurrentUserName != "Henrique" {
+		t.Logf("Output recebido: %s", config.CurrentUserName)
 		t.Fatalf("current user name diferente do esperado")
 	}
 }
