@@ -11,10 +11,13 @@ type state struct {
 }
 
 func main() {
-	document, _ := config.Read()
-	fmt.Printf("%+v\n", document)
-	_ = config.SetUser("HenriqueVigato")
+	document, err := config.Read()
+	if err != nil {
+		fmt.Errorf("err: %v", err)
+	}
 
-	document, _ = config.Read()
-	fmt.Printf("%+v\n", document)
+	cmds := &commands{
+		registercommands: make(map[string]func(*state, command) error),
+	}
+	cmds.register("login", handlerLogin)
 }
