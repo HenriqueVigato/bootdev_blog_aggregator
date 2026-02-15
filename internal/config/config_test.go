@@ -53,6 +53,7 @@ func TestRead(t *testing.T) {
 }
 
 func TestSetUser(t *testing.T) {
+	setupTestEnv(t)
 	err := SetUser("Henrique")
 	if err != nil {
 		t.Fatalf("Erro ao definir o usuario novo %v", err)
