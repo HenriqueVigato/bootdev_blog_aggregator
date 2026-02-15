@@ -14,7 +14,7 @@ type commands struct {
 func (c *commands) run(s *state, cmd command) error {
 	function, ok := c.registercommands[cmd.Name]
 	if !ok {
-		return fmt.Errorf("comando %s nao esta retistrado", cmd.Name)
+		return fmt.Errorf("comando %s nao esta registrado", cmd.Name)
 	}
 	return function(s, cmd)
 }
