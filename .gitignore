@@ -1,2 +1,32 @@
-dataVolumes/
+# Binários compilados
 bootdev_blog_aggregator
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Código gerado pelo SQLC
+internal/database/
+
+# Config local (cada dev tem o seu)
+.gatorconfig.json
+
+# Dados do Docker (se você usar bind mount)
+dataVolumes/
+
+# Go
+*.test
+*.out
+vendor/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
