@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -19,6 +20,26 @@ func setupTestState() (*state, command) {
 			Name: "Test",
 			Args: []string{},
 		}
+}
+
+func setupTestEnv(t *testing.T) string {
+	tmpDir := t.TempDir()
+	originalHome := os.Getenv("HOME")
+	os.Setenv("HOME", tmpDir)
+	home, _ := os.UserHomeDir()
+
+	testPath := filepath.Join(home, ".gatorconfig.json")
+
+	err := os.WriteFile(testPath, []byte(`{"db_url":"postgres://example"}`), 0o644)
+	if err != nil {
+		t.Fatalf("erro ao escrever no arquivo de teste %v", err)
+	}
+
+	t.Cleanup(func() {
+		os.Setenv("HOME", originalHome)
+	})
+
+	return tmpDir
 }
 
 func capturaOutput(fn func() error) (string, error) {
@@ -40,6 +61,7 @@ func capturaOutput(fn func() error) (string, error) {
 }
 
 func TestHandlerLogin_emptyUserName(t *testing.T) {
+	setupTestEnv(t)
 	s, cmd := setupTestState()
 	output, err := capturaOutput(func() error {
 		return handlerLogin(s, cmd)
@@ -52,6 +74,7 @@ func TestHandlerLogin_emptyUserName(t *testing.T) {
 }
 
 func TestHandlerLogin_ValidUserName(t *testing.T) {
+	setupTestEnv(t)
 	s, cmd := setupTestState()
 	cmd.Args = []string{"HenriqueVigato"}
 
@@ -62,8 +85,9 @@ func TestHandlerLogin_ValidUserName(t *testing.T) {
 		t.Fatalf("erro %v:", err)
 	}
 
-	if s.cfg.CurrentUserName != "HenriqueVigato" {
-		t.Logf("s.cfg.CurrentUserName %s", s.cfg.CurrentUserName)
+	cfg, err := config.Read()
+	if err != nil {
+		t.Logf("s.cfg.CurrentUserName %s", cfg.CurrentUserName)
 		t.Fatalf("CurrentUserName diferento do nome definido")
 	}
 

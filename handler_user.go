@@ -1,15 +1,19 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/HenriqueVigato/bootdev_blog_aggregator/internal/config"
+)
 
 func handlerLogin(s *state, cmd command) error {
-	if len(cmd.Args) < 1 {
-		fmt.Println("O login espera apenas 1 argumento o 'User Name'")
-		return fmt.Errorf("o login handler espera um argumento 'username'")
+	if len(cmd.Args) == 0 {
+		return fmt.Errorf("o login handler espera um argumento user name")
 	}
-
-	s.cfg.CurrentUserName = cmd.Args[0]
+	err := config.SetUser(cmd.Args[0])
+	if err != nil {
+		return err
+	}
 	fmt.Println("User has been set.")
-
 	return nil
 }
