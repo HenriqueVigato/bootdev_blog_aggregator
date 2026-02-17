@@ -4,6 +4,8 @@ import (
 	"log"
 	"os"
 
+	_ "github.com/lib/pq"
+
 	"github.com/HenriqueVigato/bootdev_blog_aggregator/internal/config"
 )
 
