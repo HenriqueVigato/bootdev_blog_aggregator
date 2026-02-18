@@ -1,15 +1,18 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 	"os"
 
 	_ "github.com/lib/pq"
 
 	"github.com/HenriqueVigato/bootdev_blog_aggregator/internal/config"
+	"github.com/HenriqueVigato/bootdev_blog_aggregator/internal/database"
 )
 
 type state struct {
+	db  *database.Queries
 	cfg *config.Config
 }
 
@@ -19,7 +22,16 @@ func main() {
 		log.Fatal("err: ", err)
 	}
 
+	db, err := sql.Open("postgres", cfg.DBURL)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	dbQueries := database.New(db)
+
 	programState := &state{
+		db:  dbQueries,
 		cfg: cfg,
 	}
 
@@ -27,6 +39,7 @@ func main() {
 		registercommands: make(map[string]func(*state, command) error),
 	}
 	cmds.register("login", handlerLogin)
+	cmds.register("register", handlerRegister)
 
 	if len(os.Args) < 2 {
 		log.Fatal("Usage: gator <command> [args...]")
