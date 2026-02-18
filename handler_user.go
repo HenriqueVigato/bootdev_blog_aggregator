@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/HenriqueVigato/bootdev_blog_aggregator/internal/config"
 	"github.com/HenriqueVigato/bootdev_blog_aggregator/internal/database"
 	"github.com/google/uuid"
 )
@@ -15,7 +14,7 @@ func handlerLogin(s *state, cmd command) error {
 	if len(cmd.Args) == 0 {
 		return fmt.Errorf("o login handler espera um argumento user name")
 	}
-	err := config.SetUser(cmd.Args[0])
+	err := s.cfg.SetUser(cmd.Args[0])
 	if err != nil {
 		return err
 	}
@@ -45,6 +44,10 @@ func handlerRegister(s *state, cmd command) error {
 		Name:      cmd.Args[0],
 	}
 	user, err := s.db.CreateUser(ctx, *newUser)
+	if err != nil {
+		return err
+	}
+	err = s.cfg.SetUser(cmd.Args[0])
 	if err != nil {
 		return err
 	}
