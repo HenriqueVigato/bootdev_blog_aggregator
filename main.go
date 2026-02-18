@@ -52,6 +52,6 @@ func main() {
 
 	err = cmds.run(programState, cmd)
 	if err != nil {
-		log.Fatal("erro com a chamda da funcionalidado: ", err)
+		log.Fatal("erro com a chamda da funcionalidade: ", err)
 	}
 }
