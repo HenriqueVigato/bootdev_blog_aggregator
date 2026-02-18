@@ -54,11 +54,15 @@ func TestRead(t *testing.T) {
 
 func TestSetUser(t *testing.T) {
 	setupTestEnv(t)
-	err := SetUser("Henrique")
+	config := &Config{
+		DBURL:           "",
+		CurrentUserName: "",
+	}
+	err := config.SetUser("Henrique")
 	if err != nil {
 		t.Fatalf("Erro ao definir o usuario novo %v", err)
 	}
-	config, err := Read()
+	config, err = Read()
 	if err != nil {
 		t.Fatalf("Erro ao ler o arquivo de config: %v", err)
 	}

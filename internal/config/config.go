@@ -31,7 +31,7 @@ func Read() (*Config, error) {
 	return &config, nil
 }
 
-func SetUser(user string) error {
+func (c *Config) SetUser(user string) error {
 	config, err := Read()
 	if err != nil {
 		return err
