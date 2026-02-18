@@ -16,15 +16,19 @@ import (
 	"github.com/google/uuid"
 )
 
-func setupTestState() (*state, command) {
+func setupTestState(t *testing.T) (*state, command, string) {
+	db := setupTestDB(t)
 	return &state{
+			db: db,
 			cfg: &config.Config{
+				DBURL:           "",
 				CurrentUserName: "test_user",
 			},
 		}, command{
 			Name: "Test",
 			Args: []string{},
-		}
+		},
+		setupTestEnv(t)
 }
 
 func setupTestEnv(t *testing.T) string {
@@ -47,7 +51,7 @@ func setupTestEnv(t *testing.T) string {
 	return tmpDir
 }
 
-func setupTestDB(t *testing.T) (*database.Queries, func()) {
+func setupTestDB(t *testing.T) *database.Queries {
 	dbURL := "postgres://gator_user:gator_pass@localhost:5433/gator?sslmode=disable"
 
 	db, err := sql.Open("postgres", dbURL)
@@ -56,11 +60,12 @@ func setupTestDB(t *testing.T) (*database.Queries, func()) {
 	}
 
 	dbQueries := database.New(db)
-	cleanup := func() {
+
+	t.Cleanup(func() {
 		db.Exec("DELETE FROM users")
 		db.Close()
-	}
-	return dbQueries, cleanup
+	})
+	return dbQueries
 }
 
 func capturaOutput(fn func() error) (string, error) {
@@ -83,7 +88,7 @@ func capturaOutput(fn func() error) (string, error) {
 
 func TestHandlerLogin_emptyUserName(t *testing.T) {
 	setupTestEnv(t)
-	s, cmd := setupTestState()
+	s, cmd, _ := setupTestState(t)
 	output, err := capturaOutput(func() error {
 		return handlerLogin(s, cmd)
 	})
@@ -94,10 +99,33 @@ func TestHandlerLogin_emptyUserName(t *testing.T) {
 	}
 }
 
+//	func TestHandlerLogin_UnregitredUserName(t *testing.T) {
+//		setupTestEnv(t)
+//		dbQueries, cleanup := setupTestDB(t)
+//		defer cleanup()
+//
+//		s := &state{db: dbQueries}
+//		cmd := command{Name: "register", Args: []string{"test_user_success"}}
+//
+//		err := handlerRegister(s, cmd)
+//		if err != nil {
+//			t.Fatalf("nao era esperado nenhum erro")
+//		}
+//	}
 func TestHandlerLogin_ValidUserName(t *testing.T) {
 	setupTestEnv(t)
-	s, cmd := setupTestState()
+	s, cmd, _ := setupTestState(t)
 	cmd.Args = []string{"HenriqueVigato"}
+
+	_, err := s.db.CreateUser(context.Background(), database.CreateUserParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		Name:      "HenriqueVigato",
+	})
+	if err != nil {
+		t.Fatalf("erro ao criar o usuario de test %v", err)
+	}
 
 	output, err := capturaOutput(func() error {
 		return handlerLogin(s, cmd)
@@ -119,11 +147,10 @@ func TestHandlerLogin_ValidUserName(t *testing.T) {
 }
 
 func TestHandlerRegister_FaltaArgumento(t *testing.T) {
-	dbQueries, cleanup := setupTestDB(t)
-	defer cleanup()
+	s, cmd, _ := setupTestState(t)
 
-	s := &state{db: dbQueries}
-	cmd := command{Name: "register", Args: []string{}}
+	cmd.Name = "register"
+	cmd.Args = []string{}
 
 	err := handlerRegister(s, cmd)
 	if err == nil {
@@ -132,12 +159,10 @@ func TestHandlerRegister_FaltaArgumento(t *testing.T) {
 }
 
 func TestHandlerRegister_UsuarioJaExiste(t *testing.T) {
-	dbQueries, cleanup := setupTestDB(t)
-	defer cleanup()
+	s, cmd, _ := setupTestState(t)
 
-	s := &state{db: dbQueries}
 	ctx := context.Background()
-	_, err := dbQueries.CreateUser(ctx, database.CreateUserParams{
+	_, err := s.db.CreateUser(ctx, database.CreateUserParams{
 		ID:        uuid.New(),
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
@@ -147,7 +172,9 @@ func TestHandlerRegister_UsuarioJaExiste(t *testing.T) {
 		t.Fatalf("erro ao criar o usuario de test %v", err)
 	}
 
-	cmd := command{Name: "register", Args: []string{"Test User"}}
+	cmd.Name = "register"
+	cmd.Args = []string{"Test User"}
+
 	err = handlerRegister(s, cmd)
 
 	if err == nil {
@@ -160,15 +187,14 @@ func TestHandlerRegister_UsuarioJaExiste(t *testing.T) {
 }
 
 func TestHandlerRegister_Success(t *testing.T) {
-	dbQueries, cleanup := setupTestDB(t)
-	defer cleanup()
+	s, cmd, _ := setupTestState(t)
 
-	s := &state{db: dbQueries}
-	cmd := command{Name: "register", Args: []string{"test_user_success"}}
+	cmd.Name = "register"
+	cmd.Args = []string{"test_user_success"}
 
 	err := handlerRegister(s, cmd)
 	if err != nil {
-		t.Fatalf("nao era esperado nenhum erro")
+		t.Fatalf("nao era esperado nenhum erro: %v", err)
 	}
 
 	_, err = s.db.GetUser(context.Background(), "test_user_success")

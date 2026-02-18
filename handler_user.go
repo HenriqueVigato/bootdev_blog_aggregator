@@ -14,7 +14,12 @@ func handlerLogin(s *state, cmd command) error {
 	if len(cmd.Args) == 0 {
 		return fmt.Errorf("o login handler espera um argumento user name")
 	}
-	err := s.cfg.SetUser(cmd.Args[0])
+	_, err := s.db.GetUser(context.Background(), cmd.Args[0])
+	if err != nil {
+		return fmt.Errorf("o usuario deve ja estar criado para poder fazer login")
+	}
+
+	err = s.cfg.SetUser(cmd.Args[0])
 	if err != nil {
 		return err
 	}
