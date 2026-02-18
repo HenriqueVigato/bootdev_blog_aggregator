@@ -1,0 +1,14 @@
+services:
+  db_test: # Banco só para testes
+    image: postgres:16
+    container_name: gator_postgres_test
+    restart: always
+    shm_size: 128mb
+    ports:
+      - "5433:5432" # porta diferente
+    environment:
+      POSTGRES_DB: gator
+      POSTGRES_USER: gator_user
+      POSTGRES_PASSWORD: gator_pass
+    tmpfs:
+      - /var/lib/postgresql/data # dados em memória, não persiste
