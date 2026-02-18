@@ -20,7 +20,7 @@ func newTestCommands(t *testing.T) *commands {
 }
 
 func TestRun_fail(t *testing.T) {
-	s, c := setupTestState()
+	s, c, _ := setupTestState(t)
 	cmds := newTestCommands(t)
 	c.Name = "test"
 
@@ -32,7 +32,7 @@ func TestRun_fail(t *testing.T) {
 }
 
 func TestRun_success(t *testing.T) {
-	s, c := setupTestState()
+	s, c, _ := setupTestState(t)
 	cmds := newTestCommands(t)
 	c.Name = "test"
 	cmds.registercommands[c.Name] = func(s *state, c command) error {
@@ -48,7 +48,7 @@ func TestRun_success(t *testing.T) {
 }
 
 func TestRegister(t *testing.T) {
-	_, c := setupTestState()
+	_, c, _ := setupTestState(t)
 	cmds := newTestCommands(t)
 
 	c.Name = "test register"
