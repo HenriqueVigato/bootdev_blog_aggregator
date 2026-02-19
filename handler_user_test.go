@@ -104,7 +104,7 @@ func TestHandlerLogin_UnregisteredUserName(t *testing.T) {
 	s, cmd, _ := setupTestState(t)
 	cmd.Args = []string{"Unregistered user"}
 
-	output, err := capturaOutput(func() error {
+	_, err := capturaOutput(func() error {
 		return handlerLogin(s, cmd)
 	})
 
@@ -112,8 +112,8 @@ func TestHandlerLogin_UnregisteredUserName(t *testing.T) {
 		t.Errorf("Deveria retorar um erro pois o user nao esta cadastrado no banco de dados")
 	}
 
-	if !strings.Contains(output, "ja estar criado") {
-		t.Logf("unregistered user: %v", output)
+	if !strings.Contains(err.Error(), "ja estar criado") {
+		t.Logf("unregistered user: %v", err.Error())
 		t.Errorf("deveria aparecer um erro dizendo que o usuario deveria estar cadastrado")
 	}
 }
