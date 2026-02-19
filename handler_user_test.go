@@ -99,29 +99,35 @@ func TestHandlerLogin_emptyUserName(t *testing.T) {
 	}
 }
 
-//	func TestHandlerLogin_UnregitredUserName(t *testing.T) {
-//		setupTestEnv(t)
-//		dbQueries, cleanup := setupTestDB(t)
-//		defer cleanup()
-//
-//		s := &state{db: dbQueries}
-//		cmd := command{Name: "register", Args: []string{"test_user_success"}}
-//
-//		err := handlerRegister(s, cmd)
-//		if err != nil {
-//			t.Fatalf("nao era esperado nenhum erro")
-//		}
-//	}
+func TestHandlerLogin_UnregisteredUserName(t *testing.T) {
+	setupTestEnv(t)
+	s, cmd, _ := setupTestState(t)
+	cmd.Args = []string{"Unregistered user"}
+
+	output, err := capturaOutput(func() error {
+		return handlerLogin(s, cmd)
+	})
+
+	if err == nil {
+		t.Errorf("Deveria retorar um erro pois o user nao esta cadastrado no banco de dados")
+	}
+
+	if !strings.Contains(output, "ja estar criado") {
+		t.Logf("unregistered user: %v", output)
+		t.Errorf("deveria aparecer um erro dizendo que o usuario deveria estar cadastrado")
+	}
+}
+
 func TestHandlerLogin_ValidUserName(t *testing.T) {
 	setupTestEnv(t)
 	s, cmd, _ := setupTestState(t)
-	cmd.Args = []string{"HenriqueVigato"}
+	cmd.Args = []string{"Test valid user"}
 
 	_, err := s.db.CreateUser(context.Background(), database.CreateUserParams{
 		ID:        uuid.New(),
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
-		Name:      "HenriqueVigato",
+		Name:      "Test valid user",
 	})
 	if err != nil {
 		t.Fatalf("erro ao criar o usuario de test %v", err)
