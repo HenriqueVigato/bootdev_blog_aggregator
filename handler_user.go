@@ -71,3 +71,20 @@ func handlerReset(s *state, cmd command) error {
 	fmt.Println("Usuarios deletados com sucesso")
 	return nil
 }
+
+func getAllUsers(s *state, cmd command) error {
+	_ = cmd
+	ctx := context.Background()
+	users, err := s.db.GetAllUsers(ctx)
+	if err != nil {
+		return fmt.Errorf("erro ao buscar ao buscar todos os usuarios %v", err)
+	}
+	for _, user := range users {
+		if s.cfg.CurrentUserName == user.Name {
+			fmt.Printf("%s (current)\n", user.Name)
+		} else {
+			fmt.Println(user.Name)
+		}
+	}
+	return nil
+}
