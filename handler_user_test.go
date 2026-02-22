@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"database/sql"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -87,7 +88,6 @@ func capturaOutput(fn func() error) (string, error) {
 }
 
 func TestHandlerLogin_emptyUserName(t *testing.T) {
-	setupTestEnv(t)
 	s, cmd, _ := setupTestState(t)
 	output, err := capturaOutput(func() error {
 		return handlerLogin(s, cmd)
@@ -236,5 +236,35 @@ func TestHandlerReset(t *testing.T) {
 	if err == nil {
 		t.Logf("err %v", err)
 		t.Fatalf("era esperado um erro pois o usuario foi excluido")
+	}
+}
+
+func TestGetAllUsers(t *testing.T) {
+	s, cmd, _ := setupTestState(t)
+
+	for v := range int(10) {
+		cmd.Name = "register"
+		cmd.Args = []string{fmt.Sprintf("test_user_%d", v)}
+		err := handlerRegister(s, cmd)
+		if err != nil {
+			t.Fatalf("erro ao registrar os usuarios de teste %v", err)
+			break
+		}
+	}
+
+	output, err := capturaOutput(func() error {
+		return getAllUsers(s, cmd)
+	})
+	if err != nil {
+		t.Fatalf("erro ao capturar o output %v", err)
+	}
+	if !strings.Contains(output, "test_user_5") {
+		t.Logf("output: %v", output)
+		t.Errorf("era esperado encontrar todos os 10 usuarios cadastrados")
+	}
+
+	if !strings.Contains(output, "test_user_9 (current)") {
+		t.Logf("output: %v\n", output)
+		t.Errorf("era esperado que o usuario logado seja identificado")
 	}
 }
