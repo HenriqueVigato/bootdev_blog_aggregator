@@ -32,13 +32,9 @@ func Read() (*Config, error) {
 }
 
 func (c *Config) SetUser(user string) error {
-	config, err := Read()
-	if err != nil {
-		return err
-	}
-	config.CurrentUserName = user
+	c.CurrentUserName = user
 
-	err = write(config)
+	err := write(c)
 	if err != nil {
 		return err
 	}
