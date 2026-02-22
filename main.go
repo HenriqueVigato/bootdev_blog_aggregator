@@ -40,6 +40,7 @@ func main() {
 	}
 	cmds.register("login", handlerLogin)
 	cmds.register("register", handlerRegister)
+	cmds.register("reset", handlerReset)
 
 	if len(os.Args) < 2 {
 		log.Fatal("Usage: gator <command> [args...]")
@@ -52,6 +53,6 @@ func main() {
 
 	err = cmds.run(programState, cmd)
 	if err != nil {
-		log.Fatal("erro com a chamda da funcionalidade: ", err)
+		log.Fatal("erro com a chamada da funcionalidade: ", err)
 	}
 }
