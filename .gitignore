@@ -8,6 +8,7 @@ bootdev_blog_aggregator
 
 # Código gerado pelo SQLC
 internal/database/*
+!internal/database/.gitkeep
 
 # Config local (cada dev tem o seu)
 .gatorconfig.json
