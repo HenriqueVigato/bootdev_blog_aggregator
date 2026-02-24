@@ -7,7 +7,7 @@ bootdev_blog_aggregator
 *.dylib
 
 # Código gerado pelo SQLC
-internal/database/
+internal/database/*
 
 # Config local (cada dev tem o seu)
 .gatorconfig.json
