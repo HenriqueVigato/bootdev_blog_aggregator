@@ -11,7 +11,9 @@ func TestHandlerReset(t *testing.T) {
 	cmd.Name = "register"
 	cmd.Args = []string{"test_user_delete"}
 
-	err := handlerRegister(s, cmd)
+	_, err := capturaOutput(func() error {
+		return handlerRegister(s, cmd)
+	})
 	if err != nil {
 		t.Fatalf("nao era esperado nenhum erro aqui %v", err)
 	}
@@ -22,7 +24,9 @@ func TestHandlerReset(t *testing.T) {
 		t.Fatalf("nao era esperado nenhum erro agoria na hora de ver se o usuario teste foi criado")
 	}
 
-	err = handlerReset(s, cmd)
+	_, err = capturaOutput(func() error {
+		return handlerReset(s, cmd)
+	})
 	if err != nil {
 		t.Logf("resetUser err: %v", err)
 		t.Fatalf("nao era esperado nenhum erro aqui")

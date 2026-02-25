@@ -158,7 +158,9 @@ func TestHandlerRegister_FaltaArgumento(t *testing.T) {
 	cmd.Name = "register"
 	cmd.Args = []string{}
 
-	err := handlerRegister(s, cmd)
+	_, err := capturaOutput(func() error {
+		return handlerRegister(s, cmd)
+	})
 	if err == nil {
 		t.Fatalf("esperava erro quando nao ha argumentos")
 	}
@@ -181,7 +183,9 @@ func TestHandlerRegister_UsuarioJaExiste(t *testing.T) {
 	cmd.Name = "register"
 	cmd.Args = []string{"Test User"}
 
-	err = handlerRegister(s, cmd)
+	_, err = capturaOutput(func() error {
+		return handlerRegister(s, cmd)
+	})
 
 	if err == nil {
 		t.Fatalf("esperava um erro pois o usuario ja existe")
@@ -198,7 +202,9 @@ func TestHandlerRegister_Success(t *testing.T) {
 	cmd.Name = "register"
 	cmd.Args = []string{"test_user_success"}
 
-	err := handlerRegister(s, cmd)
+	_, err := capturaOutput(func() error {
+		return handlerRegister(s, cmd)
+	})
 	if err != nil {
 		t.Fatalf("nao era esperado nenhum erro: %v", err)
 	}
@@ -215,7 +221,9 @@ func TestGetAllUsers(t *testing.T) {
 	for v := range int(10) {
 		cmd.Name = "register"
 		cmd.Args = []string{fmt.Sprintf("test_user_%d", v)}
-		err := handlerRegister(s, cmd)
+		_, err := capturaOutput(func() error {
+			return handlerRegister(s, cmd)
+		})
 		if err != nil {
 			t.Fatalf("erro ao registrar os usuarios de teste %v", err)
 			break
