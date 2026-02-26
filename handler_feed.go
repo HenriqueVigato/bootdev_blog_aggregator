@@ -16,7 +16,7 @@ func addFeed(s *state, cmd command) error {
 	}
 	getCurrentUser, err := s.db.GetUser(ctx, s.cfg.CurrentUserName)
 	if err != nil {
-		return err
+		return fmt.Errorf("erro ao buscar o usuario registrado: %v", err)
 	}
 
 	newFeed := &database.CreateFeedParams{
