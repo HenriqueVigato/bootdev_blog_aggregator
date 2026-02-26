@@ -34,3 +34,24 @@ func addFeed(s *state, cmd command) error {
 	}
 	return nil
 }
+
+func getFeeds(s *state, cmd command) error {
+	ctx := context.Background()
+	if len(cmd.Args) > 0 {
+		return fmt.Errorf("a funcao getFeeds nao espera nenhum argumento")
+	}
+	feeds, err := s.db.GetAllFeeds(ctx)
+	if err != nil {
+		return fmt.Errorf("erro ao buscar os feeds: %v", err)
+	}
+
+	for _, feed := range feeds {
+		currentUser, err := s.db.GetUserById(ctx, feed.UserID)
+		if err != nil {
+			return fmt.Errorf("erro ao buscar o nome do usuario %v", err)
+		}
+		fmt.Printf("Feed name: %s;\n Feed URL: %s;\n UserName: %s;\n", feed.Name, feed.Url, currentUser.Name)
+	}
+
+	return nil
+}
