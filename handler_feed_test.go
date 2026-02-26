@@ -1,6 +1,9 @@
 package main
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func TestAddFeed_emptyUser(t *testing.T) {
 	s, cmd, _ := setupTestState(t)
@@ -43,5 +46,35 @@ func TestAddFeed_duplicateUser(t *testing.T) {
 	if err == nil {
 		t.Logf("Err: %v", err)
 		t.Errorf("era esperado um erro pois o feed esta duplicado")
+	}
+}
+
+func TestGetFeeds_failure(t *testing.T) {
+	s, cmd, _ := setupTestState(t)
+	cmd.Args = []string{"falha", "informacao inutil"}
+
+	_, err := capturaOutput(func() error {
+		return getFeeds(s, cmd)
+	})
+	if err == nil {
+		t.Errorf("era esperado uma mensagem de erro uma vez que a funcao foi chamada com argumentos")
+	}
+}
+
+func TestGetFeeds_success(t *testing.T) {
+	s, cmd, _ := setupTestState(t)
+	setupTestFeeds(t, s)
+
+	output, err := capturaOutput(func() error {
+		return getFeeds(s, cmd)
+	})
+	if err != nil {
+		t.Logf("Erro inesperado: %v", err)
+		t.Errorf("nao era esperado nenhum erro na chamada do capturaOutput")
+	}
+
+	if strings.Contains(output, "Hacker News") {
+		t.Logf("output: \n%v", output)
+		t.Errorf("era esperado receber o feeds no output")
 	}
 }
