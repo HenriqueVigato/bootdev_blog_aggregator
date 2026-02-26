@@ -77,6 +77,7 @@ func setupTestDB(t *testing.T) *database.Queries {
 
 	t.Cleanup(func() {
 		db.Exec("DELETE FROM users")
+		db.Exec("DELETE FROM feeds")
 		db.Close()
 	})
 	return dbQueries
@@ -98,4 +99,49 @@ func capturaOutput(fn func() error) (string, error) {
 	var buf bytes.Buffer
 	io.Copy(&buf, r)
 	return buf.String(), err
+}
+
+func setupTestFeeds(t *testing.T, s *state) {
+	t.Helper()
+
+	ctx := context.Background()
+	user, err := s.db.GetUser(ctx, s.cfg.CurrentUserName)
+	if err != nil {
+		t.Fatalf("erro ao buscar usuario para criar feeds: %v", err)
+	}
+
+	feeds := []database.CreateFeedParams{
+		{
+			ID:        uuid.New(),
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+			Name:      "Hacker News",
+			Url:       "https://hnrss.org/newest",
+			UserID:    user.ID,
+		},
+		{
+			ID:        uuid.New(),
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+			Name:      "Lane's Blog",
+			Url:       "https://www.wagslane.dev/index.xml",
+			UserID:    user.ID,
+		},
+		{
+			ID:        uuid.New(),
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+			Name:      "Go Blog",
+			Url:       "https://go.dev/blog/feed.atom",
+			UserID:    user.ID,
+		},
+	}
+
+	for _, f := range feeds {
+		f.UserID = user.ID
+		_, err := s.db.CreateFeed(ctx, f)
+		if err != nil {
+			t.Fatalf("erro ao criar feed '%s': %v", f.Name, err)
+		}
+	}
 }
