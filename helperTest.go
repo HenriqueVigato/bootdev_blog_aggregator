@@ -78,6 +78,7 @@ func setupTestDB(t *testing.T) *database.Queries {
 	t.Cleanup(func() {
 		db.Exec("DELETE FROM users")
 		db.Exec("DELETE FROM feeds")
+		db.Exec("DELETE FROM feed_follows")
 		db.Close()
 	})
 	return dbQueries
@@ -103,11 +104,19 @@ func capturaOutput(fn func() error) (string, error) {
 
 func setupTestFeeds(t *testing.T, s *state) {
 	t.Helper()
-
 	ctx := context.Background()
-	user, err := s.db.GetUser(ctx, s.cfg.CurrentUserName)
-	if err != nil {
-		t.Fatalf("erro ao buscar usuario para criar feeds: %v", err)
+	extraUsers := []string{"user_one", "user_two", "user_three"}
+	for _, name := range extraUsers {
+		extraState := &state{
+			db:  s.db,
+			cfg: &config.Config{CurrentUserName: name},
+		}
+		setupTestUser(t, extraState)
+	}
+
+	extraUser := make(map[string]database.User)
+	for _, name := range extraUsers {
+		extraUser[name], _ = s.db.GetUser(ctx, name)
 	}
 
 	feeds := []database.CreateFeedParams{
@@ -117,7 +126,7 @@ func setupTestFeeds(t *testing.T, s *state) {
 			UpdatedAt: time.Now(),
 			Name:      "Hacker News",
 			Url:       "https://hnrss.org/newest",
-			UserID:    user.ID,
+			UserID:    extraUser["user_one"].ID,
 		},
 		{
 			ID:        uuid.New(),
@@ -125,7 +134,7 @@ func setupTestFeeds(t *testing.T, s *state) {
 			UpdatedAt: time.Now(),
 			Name:      "Lane's Blog",
 			Url:       "https://www.wagslane.dev/index.xml",
-			UserID:    user.ID,
+			UserID:    extraUser["user_two"].ID,
 		},
 		{
 			ID:        uuid.New(),
@@ -133,12 +142,11 @@ func setupTestFeeds(t *testing.T, s *state) {
 			UpdatedAt: time.Now(),
 			Name:      "Go Blog",
 			Url:       "https://go.dev/blog/feed.atom",
-			UserID:    user.ID,
+			UserID:    extraUser["user_three"].ID,
 		},
 	}
 
 	for _, f := range feeds {
-		f.UserID = user.ID
 		_, err := s.db.CreateFeed(ctx, f)
 		if err != nil {
 			t.Fatalf("erro ao criar feed '%s': %v", f.Name, err)
