@@ -73,7 +73,7 @@ func TestGetFeeds_success(t *testing.T) {
 		t.Errorf("nao era esperado nenhum erro na chamada do capturaOutput")
 	}
 
-	if strings.Contains(output, "Hacker News") {
+	if !strings.Contains(output, "Hacker News") {
 		t.Logf("output: \n%v", output)
 		t.Errorf("era esperado receber o feeds no output")
 	}
