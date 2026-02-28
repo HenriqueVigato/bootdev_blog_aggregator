@@ -55,3 +55,10 @@ func getFeeds(s *state, cmd command) error {
 
 	return nil
 }
+
+func follow(s *state, cmd command) error {
+	if len(cmd.Args) < 1 {
+		return fmt.Errorf("se espera a url a ser seguida")
+	}
+	return nil
+}

@@ -78,3 +78,13 @@ func TestGetFeeds_success(t *testing.T) {
 		t.Errorf("era esperado receber o feeds no output")
 	}
 }
+
+func TestFollow_withoutArgs(t *testing.T) {
+	s, cmd, _ := setupTestState(t)
+	_, err := capturaOutput(func() error {
+		return follow(s, cmd)
+	})
+	if err == nil {
+		t.Errorf("era esperado uma mensagem avisando que esta faltando argumentos na chamada")
+	}
+}
