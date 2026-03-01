@@ -88,3 +88,21 @@ func TestFollow_withoutArgs(t *testing.T) {
 		t.Errorf("era esperado uma mensagem avisando que esta faltando argumentos na chamada")
 	}
 }
+
+func TestFollow_success(t *testing.T) {
+	s, cmd, _ := setupTestState(t)
+	setupTestFeeds(t, s)
+	cmd.Args = []string{"https://hnrss.org/newest"}
+
+	output, err := capturaOutput(func() error {
+		return follow(s, cmd)
+	})
+	if err != nil {
+		t.Logf("Erro inesperado: %v", err)
+		t.Errorf("nao era esperado nenhum erro na chamada do capturaOutput")
+	}
+
+	if !strings.Contains(output, "Hacker News") {
+		t.Errorf("era esperado o nome e o nome do dono do feed mas veio o output: \n%v", output)
+	}
+}
