@@ -57,8 +57,32 @@ func getFeeds(s *state, cmd command) error {
 }
 
 func follow(s *state, cmd command) error {
+	ctx := context.Background()
 	if len(cmd.Args) < 1 {
 		return fmt.Errorf("se espera a url a ser seguida")
 	}
+	user, err := s.db.GetUser(ctx, s.cfg.CurrentUserName)
+	if err != nil {
+		return fmt.Errorf("getUser error: %v", err)
+	}
+
+	feed, err := s.db.GetFeedByURL(ctx, cmd.Args[0])
+	if err != nil {
+		return fmt.Errorf("getFeed error: %v", err)
+	}
+
+	feedFollow := &database.CreateFeedFollowParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		UserID:    user.ID,
+		FeedID:    feed.ID,
+	}
+	followFeed, err := s.db.CreateFeedFollow(ctx, *feedFollow)
+	if err != nil {
+		return fmt.Errorf("createFollow error: %v", err)
+	}
+
+	fmt.Printf("Follow feed: %s, Used: %s ", followFeed.FeedName, followFeed.UserName)
 	return nil
 }
