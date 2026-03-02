@@ -63,7 +63,6 @@ func TestGetFeeds_failure(t *testing.T) {
 
 func TestGetFeeds_success(t *testing.T) {
 	s, cmd, _ := setupTestState(t)
-	setupTestFeeds(t, s)
 
 	output, err := capturaOutput(func() error {
 		return getFeeds(s, cmd)
@@ -91,7 +90,6 @@ func TestFollow_withoutArgs(t *testing.T) {
 
 func TestFollow_success(t *testing.T) {
 	s, cmd, _ := setupTestState(t)
-	setupTestFeeds(t, s)
 	cmd.Args = []string{"https://hnrss.org/newest"}
 
 	output, err := capturaOutput(func() error {
@@ -104,5 +102,31 @@ func TestFollow_success(t *testing.T) {
 
 	if !strings.Contains(output, "Hacker News") {
 		t.Errorf("era esperado o nome e o nome do dono do feed mas veio o output: \n%v", output)
+	}
+}
+
+func TestFollowing_withArgs(t *testing.T) {
+	s, cmd, _ := setupTestState(t)
+	cmd.Args = []string{"argumento"}
+
+	err := following(s, cmd)
+
+	if err == nil {
+		t.Errorf("era esperado uma mensagem de erro avisando que a funcao following nao recebe nenhum argumento")
+	}
+}
+
+func TestFollowing_success(t *testing.T) {
+	s, cmd, _ := setupTestState(t)
+
+	output, err := capturaOutput(func() error {
+		return following(s, cmd)
+	})
+	if err != nil {
+		t.Errorf("erro na chamada da funcionalidade following: %v", err)
+	}
+
+	if !strings.Contains(output, "Lane's Blog") {
+		t.Errorf("o output nao continha as informacoes esperadas. \nOutput: \n%v", output)
 	}
 }
