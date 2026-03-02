@@ -45,6 +45,8 @@ func main() {
 	cmds.register("agg", agg)
 	cmds.register("addfeed", addFeed)
 	cmds.register("feeds", getFeeds)
+	cmds.register("follow", follow)
+	cmds.register("following", following)
 
 	if len(os.Args) < 2 {
 		log.Fatal("Usage: gator <command> [args...]")
