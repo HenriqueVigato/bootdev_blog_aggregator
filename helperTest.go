@@ -29,6 +29,8 @@ func setupTestState(t *testing.T) (*state, command, string) {
 		Args: []string{},
 	}
 	setupTestUser(t, s)
+	setupTestFeeds(t, s)
+	setupTestFollowing(t, s)
 	return s, cmd, setupTestEnv(t)
 }
 
@@ -105,6 +107,7 @@ func capturaOutput(fn func() error) (string, error) {
 func setupTestFeeds(t *testing.T, s *state) {
 	t.Helper()
 	ctx := context.Background()
+	mainUser, _ := s.db.GetUser(ctx, s.cfg.CurrentUserName)
 	extraUsers := []string{"user_one", "user_two", "user_three"}
 	for _, name := range extraUsers {
 		extraState := &state{
@@ -144,6 +147,14 @@ func setupTestFeeds(t *testing.T, s *state) {
 			Url:       "https://go.dev/blog/feed.atom",
 			UserID:    extraUser["user_three"].ID,
 		},
+		{
+			ID:        uuid.New(),
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+			Name:      "Ohh the lion",
+			Url:       "https://the_lion_on_the_savane.org.altm",
+			UserID:    mainUser.ID,
+		},
 	}
 
 	for _, f := range feeds {
@@ -151,5 +162,27 @@ func setupTestFeeds(t *testing.T, s *state) {
 		if err != nil {
 			t.Fatalf("erro ao criar feed '%s': %v", f.Name, err)
 		}
+	}
+}
+
+func setupTestFollowing(t *testing.T, s *state) {
+	t.Helper()
+	ctx := context.Background()
+	mainUser, _ := s.db.GetUser(ctx, s.cfg.CurrentUserName)
+
+	urls := []string{
+		"https://the_lion_on_the_savane.org.altm",
+		"https://www.wagslane.dev/index.xml",
+	}
+
+	for _, url := range urls {
+		feed, _ := s.db.GetFeedByURL(ctx, url)
+		s.db.CreateFeedFollow(ctx, database.CreateFeedFollowParams{
+			ID:        uuid.New(),
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+			UserID:    mainUser.ID,
+			FeedID:    feed.ID,
+		})
 	}
 }
