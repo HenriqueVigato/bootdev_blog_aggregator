@@ -2,7 +2,6 @@ services:
   db:
     image: postgres:16
     container_name: gator_postgres
-    restart: always
     shm_size: 128mb
     ports:
       - "5432:5432"
@@ -21,9 +20,8 @@ services:
   adminer:
     image: adminer
     container_name: gator_adminer
-    restart: always
     ports:
-      - 8080:8080
+      - 8000:8080
     depends_on:
       - db
 
