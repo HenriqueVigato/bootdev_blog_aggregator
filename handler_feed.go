@@ -9,6 +9,22 @@ import (
 	"github.com/google/uuid"
 )
 
+func createAndReturnFeedFollow(s *state, user database.User, feed database.Feed) (database.CreateFeedFollowRow, error) {
+	ctx := context.Background()
+	feedFollow := &database.CreateFeedFollowParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		UserID:    user.ID,
+		FeedID:    feed.ID,
+	}
+	followFeed, err := s.db.CreateFeedFollow(ctx, *feedFollow)
+	if err != nil {
+		return database.CreateFeedFollowRow{}, fmt.Errorf("createFollow error: %v", err)
+	}
+	return followFeed, nil
+}
+
 func addFeed(s *state, cmd command) error {
 	ctx := context.Background()
 	if len(cmd.Args) < 2 {
@@ -28,10 +44,15 @@ func addFeed(s *state, cmd command) error {
 		UserID:    getCurrentUser.ID,
 	}
 
-	_, err = s.db.CreateFeed(ctx, *newFeed)
+	createdFeed, err := s.db.CreateFeed(ctx, *newFeed)
 	if err != nil {
 		return err
 	}
+	_, err = createAndReturnFeedFollow(s, getCurrentUser, createdFeed)
+	if err != nil {
+		return fmt.Errorf("erro o criar o follow feed %v", err)
+	}
+
 	return nil
 }
 
@@ -71,18 +92,30 @@ func follow(s *state, cmd command) error {
 		return fmt.Errorf("getFeed error: %v", err)
 	}
 
-	feedFollow := &database.CreateFeedFollowParams{
-		ID:        uuid.New(),
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
-		UserID:    user.ID,
-		FeedID:    feed.ID,
-	}
-	followFeed, err := s.db.CreateFeedFollow(ctx, *feedFollow)
+	followFeed, err := createAndReturnFeedFollow(s, user, feed)
 	if err != nil {
-		return fmt.Errorf("createFollow error: %v", err)
+		return fmt.Errorf("erro o criar o follow feed %v", err)
+	}
+	fmt.Printf("Follow feed: %s, User: %s ", followFeed.FeedName, followFeed.UserName)
+	return nil
+}
+
+func following(s *state, cmd command) error {
+	if len(cmd.Args) > 0 {
+		return fmt.Errorf("o comando following nao recebe argumentos")
+	}
+	ctx := context.Background()
+	currentUser, err := s.db.GetUser(ctx, s.cfg.CurrentUserName)
+	if err != nil {
+		return fmt.Errorf("erro na busca do currentUser: %v", err)
 	}
 
-	fmt.Printf("Follow feed: %s, Used: %s ", followFeed.FeedName, followFeed.UserName)
+	followedFeed, err := s.db.GetFeedFollowsForUser(ctx, currentUser.ID)
+	if err != nil {
+		return fmt.Errorf("erro na busca do followedFeed %v", err)
+	}
+	for _, feed := range followedFeed {
+		fmt.Printf("* %s\n", feed.FeedName)
+	}
 	return nil
 }
