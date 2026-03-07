@@ -1,8 +1,11 @@
 package main
 
 import (
+	"context"
 	"strings"
 	"testing"
+
+	"github.com/HenriqueVigato/bootdev_blog_aggregator/internal/database"
 )
 
 func TestAddFeed_emptyUser(t *testing.T) {
@@ -155,4 +158,24 @@ func TestFollowing_success(t *testing.T) {
 	if !strings.Contains(output, "Lane's Blog") {
 		t.Errorf("o output nao continha as informacoes esperadas. \nOutput: \n%v", output)
 	}
+}
+
+func TestUnfollowing_insuficientArgument(t *testing.T) {
+	s, cmd, _ := setupTestState(t)
+	user := database.User{}
+
+	err := unfollow(s, cmd, user)
+	if err == nil {
+		t.Errorf("deveria conter uma mensagem que informa que o comando unfollow receber argumentos\n mas recebeu: \n%v", err)
+	}
+}
+
+func TestUnfollowing_success(t *testing.T) {
+	s, cmd, _ := setupTestState(t)
+	user, err := getUser(t, s)
+	if err != nil {
+		t.Errorf("erro ao buscar o usuario", err)
+	}
+	ctx := context.Background()
+	followingFeeds := s.db.GetFeedFollowsForUser(ctx, user.ID)
 }

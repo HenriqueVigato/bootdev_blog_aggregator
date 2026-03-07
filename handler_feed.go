@@ -106,3 +106,10 @@ func following(s *state, cmd command, user database.User) error {
 	}
 	return nil
 }
+
+func unfollow(s *state, cmd command, user database.User) error {
+	if len(cmd.Args) == 0 {
+		return fmt.Errorf("O comando unfollow recebe arguementos")
+	}
+	return nil
+}
