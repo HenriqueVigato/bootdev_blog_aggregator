@@ -25,14 +25,10 @@ func createAndReturnFeedFollow(s *state, user database.User, feed database.Feed)
 	return followFeed, nil
 }
 
-func addFeed(s *state, cmd command) error {
+func addFeed(s *state, cmd command, user database.User) error {
 	ctx := context.Background()
 	if len(cmd.Args) < 2 {
 		return fmt.Errorf("o handler addFeed espera o nome do feed e a URL")
-	}
-	getCurrentUser, err := s.db.GetUser(ctx, s.cfg.CurrentUserName)
-	if err != nil {
-		return fmt.Errorf("erro ao buscar o usuario registrado: %v", err)
 	}
 
 	newFeed := &database.CreateFeedParams{
@@ -41,14 +37,14 @@ func addFeed(s *state, cmd command) error {
 		UpdatedAt: time.Now(),
 		Name:      cmd.Args[0],
 		Url:       cmd.Args[1],
-		UserID:    getCurrentUser.ID,
+		UserID:    user.ID,
 	}
 
 	createdFeed, err := s.db.CreateFeed(ctx, *newFeed)
 	if err != nil {
 		return err
 	}
-	_, err = createAndReturnFeedFollow(s, getCurrentUser, createdFeed)
+	_, err = createAndReturnFeedFollow(s, user, createdFeed)
 	if err != nil {
 		return fmt.Errorf("erro o criar o follow feed %v", err)
 	}
@@ -77,14 +73,10 @@ func getFeeds(s *state, cmd command) error {
 	return nil
 }
 
-func follow(s *state, cmd command) error {
+func follow(s *state, cmd command, user database.User) error {
 	ctx := context.Background()
 	if len(cmd.Args) < 1 {
 		return fmt.Errorf("se espera a url a ser seguida")
-	}
-	user, err := s.db.GetUser(ctx, s.cfg.CurrentUserName)
-	if err != nil {
-		return fmt.Errorf("getUser error: %v", err)
 	}
 
 	feed, err := s.db.GetFeedByURL(ctx, cmd.Args[0])
@@ -100,17 +92,12 @@ func follow(s *state, cmd command) error {
 	return nil
 }
 
-func following(s *state, cmd command) error {
+func following(s *state, cmd command, user database.User) error {
 	if len(cmd.Args) > 0 {
 		return fmt.Errorf("o comando following nao recebe argumentos")
 	}
 	ctx := context.Background()
-	currentUser, err := s.db.GetUser(ctx, s.cfg.CurrentUserName)
-	if err != nil {
-		return fmt.Errorf("erro na busca do currentUser: %v", err)
-	}
-
-	followedFeed, err := s.db.GetFeedFollowsForUser(ctx, currentUser.ID)
+	followedFeed, err := s.db.GetFeedFollowsForUser(ctx, user.ID)
 	if err != nil {
 		return fmt.Errorf("erro na busca do followedFeed %v", err)
 	}

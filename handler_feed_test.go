@@ -8,7 +8,11 @@ import (
 func TestAddFeed_emptyUser(t *testing.T) {
 	s, cmd, _ := setupTestState(t)
 	_, err := capturaOutput(func() error {
-		return addFeed(s, cmd)
+		user, err := getUser(t, s)
+		if err != nil {
+			t.Errorf("%v", err)
+		}
+		return addFeed(s, cmd, user)
 	})
 	if err == nil {
 		t.Error("era esperado uma mensagem de erro falando que esta faltando argumentos")
@@ -18,9 +22,12 @@ func TestAddFeed_emptyUser(t *testing.T) {
 func TestAddFeed_success(t *testing.T) {
 	s, cmd, _ := setupTestState(t)
 	cmd.Args = []string{"Hacker News RSS", "https://hnrss.org/newst"}
-
-	_, err := capturaOutput(func() error {
-		return addFeed(s, cmd)
+	user, err := getUser(t, s)
+	if err != nil {
+		t.Errorf("%v", err)
+	}
+	_, err = capturaOutput(func() error {
+		return addFeed(s, cmd, user)
 	})
 	if err != nil {
 		t.Logf("Err: %v", err)
@@ -31,9 +38,12 @@ func TestAddFeed_success(t *testing.T) {
 func TestAddFeed_duplicateUser(t *testing.T) {
 	s, cmd, _ := setupTestState(t)
 	cmd.Args = []string{"Hacker News RSS", "https://hnrss.org/newst"}
-
-	_, err := capturaOutput(func() error {
-		return addFeed(s, cmd)
+	user, err := getUser(t, s)
+	if err != nil {
+		t.Errorf("%v", err)
+	}
+	_, err = capturaOutput(func() error {
+		return addFeed(s, cmd, user)
 	})
 	if err != nil {
 		t.Logf("Err: %v", err)
@@ -41,7 +51,7 @@ func TestAddFeed_duplicateUser(t *testing.T) {
 	}
 
 	_, err = capturaOutput(func() error {
-		return addFeed(s, cmd)
+		return addFeed(s, cmd, user)
 	})
 	if err == nil {
 		t.Logf("Err: %v", err)
@@ -80,8 +90,12 @@ func TestGetFeeds_success(t *testing.T) {
 
 func TestFollow_withoutArgs(t *testing.T) {
 	s, cmd, _ := setupTestState(t)
-	_, err := capturaOutput(func() error {
-		return follow(s, cmd)
+	user, err := getUser(t, s)
+	if err != nil {
+		t.Errorf("%v", err)
+	}
+	_, err = capturaOutput(func() error {
+		return follow(s, cmd, user)
 	})
 	if err == nil {
 		t.Errorf("era esperado uma mensagem avisando que esta faltando argumentos na chamada")
@@ -91,9 +105,13 @@ func TestFollow_withoutArgs(t *testing.T) {
 func TestFollow_success(t *testing.T) {
 	s, cmd, _ := setupTestState(t)
 	cmd.Args = []string{"https://hnrss.org/newest"}
+	user, err := getUser(t, s)
+	if err != nil {
+		t.Errorf("%v", err)
+	}
 
 	output, err := capturaOutput(func() error {
-		return follow(s, cmd)
+		return follow(s, cmd, user)
 	})
 	if err != nil {
 		t.Logf("Erro inesperado: %v", err)
@@ -107,9 +125,13 @@ func TestFollow_success(t *testing.T) {
 
 func TestFollowing_withArgs(t *testing.T) {
 	s, cmd, _ := setupTestState(t)
+	user, err := getUser(t, s)
+	if err != nil {
+		t.Errorf("%v", err)
+	}
 	cmd.Args = []string{"argumento"}
 
-	err := following(s, cmd)
+	err = following(s, cmd, user)
 
 	if err == nil {
 		t.Errorf("era esperado uma mensagem de erro avisando que a funcao following nao recebe nenhum argumento")
@@ -118,9 +140,13 @@ func TestFollowing_withArgs(t *testing.T) {
 
 func TestFollowing_success(t *testing.T) {
 	s, cmd, _ := setupTestState(t)
+	user, err := getUser(t, s)
+	if err != nil {
+		t.Errorf("%v", err)
+	}
 
 	output, err := capturaOutput(func() error {
-		return following(s, cmd)
+		return following(s, cmd, user)
 	})
 	if err != nil {
 		t.Errorf("erro na chamada da funcionalidade following: %v", err)
