@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"database/sql"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -14,6 +15,15 @@ import (
 	"github.com/HenriqueVigato/bootdev_blog_aggregator/internal/database"
 	"github.com/google/uuid"
 )
+
+func getUser(t *testing.T, s *state) (database.User, error) {
+	ctx := context.Background()
+	user, err := s.db.GetUser(ctx, s.cfg.CurrentUserName)
+	if err != nil {
+		return database.User{}, fmt.Errorf("helperGetUser: erro ao buscar o usuario %v", err)
+	}
+	return user, nil
+}
 
 func setupTestState(t *testing.T) (*state, command, string) {
 	db := setupTestDB(t)
