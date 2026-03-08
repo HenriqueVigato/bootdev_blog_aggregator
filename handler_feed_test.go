@@ -174,8 +174,28 @@ func TestUnfollowing_success(t *testing.T) {
 	s, cmd, _ := setupTestState(t)
 	user, err := getUser(t, s)
 	if err != nil {
-		t.Errorf("erro ao buscar o usuario", err)
+		t.Errorf("erro ao buscar o usuario %v", err)
 	}
+
 	ctx := context.Background()
-	followingFeeds := s.db.GetFeedFollowsForUser(ctx, user.ID)
+	cmd.Args = []string{"https://the_lion_on_the_savane.org.altm"}
+
+	feedFollowsBefore, err := s.db.GetFeedFollowsForUser(ctx, user.ID)
+	if err != nil {
+		t.Errorf("erro ao buscar os feeds seguidos %v", err)
+	}
+
+	if err = unfollow(s, cmd, user); err != nil {
+		t.Fatalf("erro ao dar unfollow no feed: %v", err)
+	}
+
+	feedFollowsAfter, err := s.db.GetFeedFollowsForUser(ctx, user.ID)
+	if err != nil {
+		t.Errorf("erro ao buscar os feeds seguidos %v", err)
+	}
+
+	if len(feedFollowsBefore) <= len(feedFollowsAfter) {
+		t.Errorf("o feed seguido nao foi deletado")
+		t.Logf("feeds antes: %v\nfeeds depois: %v\n", len(feedFollowsBefore), len(feedFollowsAfter))
+	}
 }
