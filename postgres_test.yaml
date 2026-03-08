@@ -18,4 +18,4 @@ services:
     ports:
       - 8001:8080
     depends_on:
-      - db
+      - db_test
