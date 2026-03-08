@@ -109,7 +109,21 @@ func following(s *state, cmd command, user database.User) error {
 
 func unfollow(s *state, cmd command, user database.User) error {
 	if len(cmd.Args) == 0 {
-		return fmt.Errorf("O comando unfollow recebe arguementos")
+		return fmt.Errorf("o comando unfollow recebe arguementos")
+	}
+	ctx := context.Background()
+	feed, err := s.db.GetFeedByURL(ctx, cmd.Args[0])
+	if err != nil {
+		return fmt.Errorf("erro na chamada unfollow ou buscar o feed pelo URL: %v", err)
+	}
+
+	deleteParams := database.DeleteFeedFollowParams{
+		UserID: user.ID,
+		FeedID: feed.ID,
+	}
+
+	if err = s.db.DeleteFeedFollow(ctx, deleteParams); err != nil {
+		return fmt.Errorf("erro ao deletar o feed seguido: %v", err)
 	}
 	return nil
 }
