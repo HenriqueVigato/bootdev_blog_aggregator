@@ -162,7 +162,7 @@ func setupTestFeeds(t *testing.T, s *state) {
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
 			Name:      "Ohh the lion",
-			Url:       "https://the_lion_on_the_savane.org.altm",
+			Url:       "https://techcrunch.com/feed/",
 			UserID:    mainUser.ID,
 		},
 	}
@@ -181,7 +181,7 @@ func setupTestFollowing(t *testing.T, s *state) {
 	mainUser, _ := s.db.GetUser(ctx, s.cfg.CurrentUserName)
 
 	urls := []string{
-		"https://the_lion_on_the_savane.org.altm",
+		"https://techcrunch.com/feed/",
 		"https://www.wagslane.dev/index.xml",
 	}
 

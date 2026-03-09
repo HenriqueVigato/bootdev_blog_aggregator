@@ -178,7 +178,7 @@ func TestUnfollowing_success(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	cmd.Args = []string{"https://the_lion_on_the_savane.org.altm"}
+	cmd.Args = []string{"https://techcrunch.com/feed/"}
 
 	feedFollowsBefore, err := s.db.GetFeedFollowsForUser(ctx, user.ID)
 	if err != nil {
