@@ -4,6 +4,9 @@ import (
 	"context"
 	"fmt"
 	"time"
+
+	"github.com/HenriqueVigato/bootdev_blog_aggregator/internal/database"
+	"github.com/google/uuid"
 )
 
 func agg(s *state, cmd command) error {
@@ -44,6 +47,28 @@ func scrapeFeeds(s *state) error {
 
 	for i, item := range feed.Channel.Item {
 		fmt.Printf("%d- %s\n", i, item.Title)
+	}
+
+	return nil
+}
+
+func savePost(s *state, feedItem RSSItem, feed database.Feed) error {
+	ctx := context.Background()
+
+	post := database.CreatePostParams{
+		ID:          uuid.New(),
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
+		Title:       feedItem.Title,
+		Url:         feedItem.Link,
+		Description: feedItem.Description,
+		PublishedAt: time.Now(),
+		FeedID:      feed.ID,
+	}
+
+	_, err := s.db.CreatePost(ctx, post)
+	if err != nil {
+		return fmt.Errorf("erro ao cadastrar o post no banco de dados: %v", err)
 	}
 
 	return nil
