@@ -5,7 +5,7 @@ CREATE TABLE posts (
   updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
   title VARCHAR(255) NOT NULL,
   url VARCHAR(255) NOT NULL UNIQUE,
-  description VARCHAR(500),
+  description VARCHAR(500) NOT NULL DEFAULT '',
   published_at TIMESTAMP NOT NULL DEFAULT NOW(),
   feed_id UUID NOT NULL,
 
