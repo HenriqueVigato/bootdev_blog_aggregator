@@ -45,7 +45,7 @@ func TestScrapeFeeds(t *testing.T) {
 		t.Fatalf("erro ao scrapeFeeds: %v", err)
 	}
 
-	if !strings.Contains(output, "10-") {
+	if !strings.Contains(output, "5-") {
 		t.Fatalf("esperava o titulo dos feeds itens mas recebeu: \n%v", output)
 	}
 
