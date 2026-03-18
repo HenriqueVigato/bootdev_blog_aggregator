@@ -45,8 +45,10 @@ func scrapeFeeds(s *state) error {
 		return fmt.Errorf("error in getting the feed: %v", err)
 	}
 
-	for i, item := range feed.Channel.Item {
-		fmt.Printf("%d- %s\n", i, item.Title)
+	for _, item := range feed.Channel.Item {
+		if err = savePost(s, item, feedsToFetch); err != nil {
+			return fmt.Errorf("erro ao salvar o post no banco de dados: %v", err)
+		}
 	}
 
 	return nil

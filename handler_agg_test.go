@@ -20,7 +20,7 @@ func TestAgg(t *testing.T) {
 		t.Fatalf("erro com a funcao agg: %v", err)
 	}
 
-	if !strings.Contains(output, "5-") {
+	if strings.Contains(output, "5-") {
 		t.Fatalf("era esperado alguns titulos: \n%v", output)
 	}
 }
@@ -38,15 +38,11 @@ func TestScrapeFeeds(t *testing.T) {
 		t.Fatalf("Nao era esperado nenhum valor alem de null")
 	}
 
-	output, err := capturaOutput(func() error {
+	_, err = capturaOutput(func() error {
 		return scrapeFeeds(s)
 	})
 	if err != nil {
 		t.Fatalf("erro ao scrapeFeeds: %v", err)
-	}
-
-	if !strings.Contains(output, "5-") {
-		t.Fatalf("esperava o titulo dos feeds itens mas recebeu: \n%v", output)
 	}
 
 	feeds, err = s.db.GetFeedByURL(ctx, feeds.Url)
@@ -79,6 +75,9 @@ func TestSavePost(t *testing.T) {
 	}
 
 	posts, err := s.db.GetPostForUser(ctx, user.ID)
+	if err != nil {
+		t.Fatalf("erro ao buscar posts por usuario %v", err)
+	}
 
 	if len(posts) > 0 {
 		t.Fatalf("nao deveria ter nenhum post no banco ainda")
@@ -95,5 +94,9 @@ func TestSavePost(t *testing.T) {
 
 	if len(posts) < 1 {
 		t.Fatalf("deveria conter o post que acabamos de salvar: %v", posts)
+	}
+
+	if err = savePost(s, fetchedFeed.Channel.Item[0], feed); err != nil {
+		t.Fatalf("nao deveria apresentar erro ao constar uma url duplicada: %v ", err)
 	}
 }
