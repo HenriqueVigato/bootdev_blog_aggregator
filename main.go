@@ -48,6 +48,7 @@ func main() {
 	cmds.register("follow", middlewareLoggedIn(follow))
 	cmds.register("following", middlewareLoggedIn(following))
 	cmds.register("unfollow", middlewareLoggedIn(unfollow))
+	cmds.register("browse", middlewareLoggedIn(browsePosts))
 
 	if len(os.Args) < 2 {
 		log.Fatal("Usage: gator <command> [args...]")
