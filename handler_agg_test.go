@@ -5,6 +5,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/HenriqueVigato/bootdev_blog_aggregator/internal/database"
 )
 
 func TestAgg(t *testing.T) {
@@ -74,7 +76,12 @@ func TestSavePost(t *testing.T) {
 		t.Fatalf("erro ou buscar o feed: %v", err)
 	}
 
-	posts, err := s.db.GetPostForUser(ctx, user.ID)
+	getPostsParams := database.GetPostForUserParams{
+		ID:    user.ID,
+		Limit: 2,
+	}
+
+	posts, err := s.db.GetPostForUser(ctx, getPostsParams)
 	if err != nil {
 		t.Fatalf("erro ao buscar posts por usuario %v", err)
 	}
@@ -87,7 +94,7 @@ func TestSavePost(t *testing.T) {
 		t.Fatalf("erro ao salvar os posts no banco: %v", err)
 	}
 
-	posts, err = s.db.GetPostForUser(ctx, user.ID)
+	posts, err = s.db.GetPostForUser(ctx, getPostsParams)
 	if err != nil {
 		t.Fatalf("erro ao buscar os posts no banco de dados")
 	}
@@ -98,5 +105,42 @@ func TestSavePost(t *testing.T) {
 
 	if err = savePost(s, fetchedFeed.Channel.Item[0], feed); err != nil {
 		t.Fatalf("nao deveria apresentar erro ao constar uma url duplicada: %v ", err)
+	}
+}
+
+func TestBrowsePosts(t *testing.T) {
+	s, cmd, _ := setupTestState(t)
+	cmd.Args = []string{"3"}
+	ctx := context.Background()
+
+	user, err := s.db.GetUser(ctx, s.cfg.CurrentUserName)
+	if err != nil {
+		t.Fatalf("erro o buscar o usuario no banco de dados ")
+	}
+	feed, err := s.db.GetFeedByURL(ctx, "https://techcrunch.com/feed/")
+	if err != nil {
+		t.Fatalf("Erro ao buscar os feeds para teste")
+	}
+
+	fetchedFeed, err := fetchFeed(ctx, feed.Url)
+	if err != nil {
+		t.Fatalf("erro ou buscar o feed: %v", err)
+	}
+
+	for _, itens := range fetchedFeed.Channel.Item {
+		if err = savePost(s, itens, feed); err != nil {
+			t.Fatalf("erro: %v", err)
+		}
+	}
+
+	output, err := capturaOutput(func() error {
+		return browsePosts(s, cmd, user)
+	})
+	if err != nil {
+		t.Fatalf("erro: %v", err)
+	}
+
+	if !strings.Contains(output, "Title:") {
+		t.Fatalf("deveria conter os posts: \n%v", output)
 	}
 }
