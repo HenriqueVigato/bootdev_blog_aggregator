@@ -6,7 +6,7 @@ CREATE TABLE posts (
   title VARCHAR(255) NOT NULL,
   url VARCHAR(255) NOT NULL UNIQUE,
   description TEXT NOT NULL DEFAULT '',
-  published_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  published_at TIMESTAMP,
   feed_id UUID NOT NULL,
 
   FOREIGN KEY(feed_id) REFERENCES feeds(id)
